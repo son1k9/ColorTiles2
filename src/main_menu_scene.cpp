@@ -5,6 +5,8 @@
 
 using namespace Scenes;
 
+extern bool windowShouldClose;
+
 MainMenuScene::MainMenuScene(SettingsScene& scene) : settingsScene_(scene) {}
 
 void MainMenuScene::processInput() {
@@ -28,7 +30,7 @@ std::unique_ptr<Scene> MainMenuScene::update(float delta) {
     }
 
     if (quit_) {
-        //Close        
+        windowShouldClose = true;
         return nullptr;
     }
 

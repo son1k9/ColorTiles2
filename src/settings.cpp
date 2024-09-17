@@ -6,34 +6,6 @@
 #include <fstream>
 #include "settings.h"
 
-static std::map<std::string, std::string> _readCfg(std::ifstream& file) {
-    std::map<std::string, std::string> values;
-    std::string line;
-    std::string identifier;
-    std::string value;
-
-    auto trim = [](std::string& str, std::string_view t = " \t\n\r\f\v") -> std::string& {
-        str.erase(str.find_last_not_of(t) + 1);
-        str.erase(0, str.find_first_not_of(t));
-        return str;
-        };
-
-    while (std::getline(file, line)) {
-        auto index = line.find('=');
-        if (index != std::string::npos) {
-            identifier = line.substr(0, index);
-            value = line.substr(index + 1);
-            trim(identifier);
-            trim(value);
-            if (identifier != "" && value != "") {
-                values[identifier] = value;
-            }
-        }
-    }
-
-    return values;
-}
-
 namespace Settings {
     float cursorSize = 1.0f;
     int fieldSize = 20;
@@ -42,30 +14,42 @@ namespace Settings {
     bool useCustomCursor = true;
 
     std::map<std::string, std::string> CfgToMap(std::string_view cfg) {
+        auto nextLine = [](std::string_view str, int& i) -> std::string_view {
+            if (i >= str.length() - 1) {
+                return {};
+            }
+
+            const auto oldI = i;
+            const auto index = str.find('\n', i);
+            i = index;
+            return str.substr(oldI + 1, index);
+            };
+
+        auto trim = [](std::string& str, std::string_view t = " \t\n\r\f\v") {
+            str.erase(str.find_last_not_of(t) + 1);
+            str.erase(0, str.find_first_not_of(t));
+            };
+
         if (cfg.length() == 0) {
             return {};
         }
 
         std::map<std::string, std::string> result;
-        int prevI = 0;
-        int i = 0;
-        std::string line;
+        std::string_view line;
         std::string identifier;
         std::string value;
-        while (i < cfg.length()) {
-            prevI = i;
-            i = cfg.find('\n', i);
-
-            if (i == std::string::npos) {
-                line = cfg.substr(prevI + 1);
+        for (int i = 0; i < cfg.length(); ) {
+            line = nextLine(cfg, i);
+            const auto index = line.find('=');
+            if (index == std::string::npos || index + 1 >= line.length()) {
+                continue;
             }
+            identifier = std::string(line.substr(0, index));
+            value = std::string(line.substr(index + 1));
 
-            line = cfg.substr(prevI + 1, i - prevI);
-
-            int eqI = cfg.find(prevI + 1, '=');
-            identifier = line.substr(prevI + 1, eqI);
-            value = line.substr(eqI + 1);
-            if (identifier.length() > 0 && value.length() > 0) {
+            trim(identifier);
+            trim(value);
+            if (identifier != "" && value != "") {
                 result[identifier] = value;
             }
         }

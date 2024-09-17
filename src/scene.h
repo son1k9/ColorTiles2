@@ -20,11 +20,11 @@ namespace Scenes {
 
     class MainMenuScene final : public Scene {
     private:
+        SettingsScene& settingsScene_;
         bool play_ = false;
         bool scores_ = false; 
         bool quit_ = false;
         bool toggleSettings_ = false;
-        SettingsScene& settingsScene_;
         bool settingsActive_ = false;
     public:
         MainMenuScene(SettingsScene& scene);
