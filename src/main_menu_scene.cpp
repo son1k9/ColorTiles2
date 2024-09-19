@@ -35,11 +35,11 @@ std::unique_ptr<Scene> MainMenuScene::update(float delta) {
     }
 
     if (play_) {
-        return std::make_unique<GameplayScene>();
+        return std::make_unique<GameplayScene>(settingsScene_);
     }
 
     if (scores_) {
-        return std::make_unique<ScoresScene>();
+        return std::make_unique<ScoresScene>(settingsScene_);
     }
 
     return nullptr;

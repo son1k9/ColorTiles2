@@ -6,14 +6,20 @@
 #include <fstream>
 #include "settings.h"
 
-namespace Settings {
-    float cursorSize = 1.0f;
-    int fieldSize = 20;
-    int roundTime = 60;
-    int colors = 10;
-    bool useCustomCursor = true;
+namespace SettingsNM {
+    std::unique_ptr<Skin> skin = nullptr;
+    Settings settings;
 
-    std::map<std::string, std::string> CfgToMap(std::string_view cfg) {
+    void setDefaultSettings() {
+        settings.cursorSize = defaultSettings.cursorSize;
+        settings.fieldSize = defaultSettings.fieldSize;
+        settings.roundTime = defaultSettings.roundTime;
+        settings.colors = defaultSettings.colors;
+        settings.useCustomCursor = defaultSettings.useCustomCursor;
+        skin = std::make_unique<Skin>(defaultSettings.skinName);
+    }
+
+    std::map<std::string, std::string> cfgToMap(std::string_view cfg) {
         auto nextLine = [](std::string_view str, int& i) -> std::string_view {
             if (i >= str.length() - 1) {
                 return {};
@@ -53,9 +59,10 @@ namespace Settings {
                 result[identifier] = value;
             }
         }
+        return result;
     }
 
-    std::string MapToCfg(std::map<std::string, std::string> settings) {
+    std::string mapToCfg(std::map<std::string, std::string> settings) {
         std::string result;
         for (const auto& [parameter, value] : settings) {
             result += std::format("{} = {}\n", parameter, value);
@@ -63,56 +70,56 @@ namespace Settings {
         return result;
     }
 
-
-    void ReadSettingsFromMap(std::map<std::string, std::string>& values) {
+    void setSettingsFromMap(std::map<std::string, std::string>& values) {
         if (values.contains("skin")) {
-            skin = TryLoadSkinOrDefaut(values["skin"]);
+            skin = std::make_unique<Skin>(values["skin"]);
         }
         else {
             skin = std::make_unique<Skin>("Default");
         }
+
         if (values.contains("cursorSize")) {
             float value = std::stof(values["cursorSize"]);
-            if (value >= 0.f && value <= 3.f) {
-                cursorSize = value;
+            if (value >= minSettings.cursorSize && value <= maxSettings.cursorSize) {
+                settings.cursorSize = value;
             }
         }
+
         if (values.contains("fieldSize")) {
             int value = std::stoi(values["fieldSize"]);
-            if (value >= 1 && value <= 20) {
-                fieldSize = value;
+            if (value >= minSettings.fieldSize && value <= maxSettings.fieldSize) {
+                settings.fieldSize = value;
             }
         }
+
         if (values.contains("roundTime")) {
             int value = std::stoi(values["roundTime"]);
-            if (value >= 1 && value <= 120) {
-                roundTime = value;
+            if (value >= minSettings.roundTime && value <= maxSettings.roundTime) {
+                settings.roundTime = value;
             }
         }
+
         if (values.contains("colors")) {
             int value = std::stoi(values["colors"]);
-            if (value >= 1 && value <= 10) {
-                colors = value;
+            if (value >= minSettings.colors && value <= maxSettings.colors) {
+                settings.colors = value;
             }
         }
+
         if (values.contains("useCustomCursor")) {
-            if (values["useCustomCursor"] == "true") {
-                useCustomCursor = true;
-            }
-            else if (values["useCustomCursor"] == "false") {
-                useCustomCursor = false;
-            }
+            bool value = values["useCustomCursor"] == "true";
+            settings.useCustomCursor = value;
         }
     }
 
-    std::map<std::string, std::string> SettingsToMap() {
+    std::map<std::string, std::string> settingsToMap() {
         std::map<std::string, std::string> result;
         result["skin"] = skin->name;
-        result["cursorSize"] = std::to_string(cursorSize);
-        result["fieldSize"] = std::to_string(fieldSize);
-        result["roundTime"] = std::to_string(roundTime);
-        result["colors"] = std::to_string(colors);
-        result["useCustomCursor"] = useCustomCursor ? "true" : "false";
+        result["cursorSize"] = std::to_string(settings.cursorSize);
+        result["fieldSize"] = std::to_string(settings.fieldSize);
+        result["roundTime"] = std::to_string(settings.roundTime);
+        result["colors"] = std::to_string(settings.colors);
+        result["useCustomCursor"] = settings.useCustomCursor ? "true" : "false";
         return result;
     }
 }

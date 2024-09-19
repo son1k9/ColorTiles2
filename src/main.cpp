@@ -1,45 +1,13 @@
+#include <sstream>
+#include <string>
+#include <fstream>
 #include <memory>
+#include "settings.h"
 #include "raylib.h"
 #include "scene.h"
 
 bool windowShouldClose = false;
 
-int main() {
-    using namespace Scenes;
-    InitWindow(1600, 900, "Color Tiles");
-    InitAudioDevice();
-    SetMasterVolume(0.5f);
-    SetTargetFPS(2 * GetMonitorRefreshRate(GetCurrentMonitor()));
-    SetExitKey(-1);
-
-    //Read settings
-    SettingsScene settingsScene;
-    std::unique_ptr<Scene> scene = std::make_unique<MainMenuScene>(settingsScene);
-
-    while (!windowShouldClose) {
-        const auto delta = GetFrameTime();
-        if (processGlobalInput()) {
-            scene->processInput();
-        }
-
-        if (auto nextScene = scene->update(delta); nextScene) {
-            scene = std::move(nextScene);
-            continue;
-        }
-
-        BeginDrawing(); {
-            scene->draw();
-        }
-        EndDrawing();
-    }
-
-    //Write settings
-
-    CloseAudioDevice();
-    CloseWindow();
-
-    return 0;
-}
 
 static bool processGlobalInput() {
     if (IsKeyPressed(KEY_F11)) {
@@ -62,4 +30,60 @@ static bool processGlobalInput() {
         }
     }
     return true;
+}
+
+int main() {
+    using namespace Scenes;
+
+    auto settingsPath = "settings.cfg";
+
+    InitWindow(1600, 900, "Color Tiles");
+    InitAudioDevice();
+    SetMasterVolume(0.5f);
+    SetTargetFPS(2 * GetMonitorRefreshRate(GetCurrentMonitor()));
+    SetExitKey(-1);
+
+    {
+        std::ifstream settingsFile(settingsPath);
+        if (settingsFile.is_open()) {
+            std::stringstream buff;
+            buff << settingsFile.rdbuf();
+            auto settingsMap = SettingsNM::cfgToMap(buff.str());
+            SettingsNM::setSettingsFromMap(settingsMap);
+        } else {
+            SettingsNM::setDefaultSettings();
+        }
+    }
+
+    SettingsScene settingsScene;
+    std::unique_ptr<Scene> scene = std::make_unique<MainMenuScene>(settingsScene);
+
+    while (!windowShouldClose) {
+        const auto delta = GetFrameTime();
+        if (processGlobalInput()) {
+            scene->processInput();
+        }
+
+        if (auto nextScene = scene->update(delta); nextScene) {
+            scene = std::move(nextScene);
+            continue;
+        }
+
+        BeginDrawing(); {
+            scene->draw();
+        }
+        EndDrawing();
+    }
+
+    {
+        auto settingsMap = SettingsNM::settingsToMap();
+        auto cfg = SettingsNM::mapToCfg(settingsMap);
+        std::ofstream settingsFile(settingsPath);
+        settingsFile << cfg;
+    }
+
+    CloseAudioDevice();
+    CloseWindow();
+
+    return 0;
 }

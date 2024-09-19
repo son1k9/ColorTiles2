@@ -37,7 +37,7 @@ namespace Scenes {
     private:
         SettingsScene& settingsScene_;
     public:
-        GameplayScene(std::unique_ptr<SettingsScene> ptr);
+        GameplayScene(SettingsScene& scene);
         void processInput() override;
         std::unique_ptr<Scene> update(float delta) override;
         void draw() override;
@@ -47,7 +47,7 @@ namespace Scenes {
     private:
         SettingsScene& settingsScene_;
     public:
-        ScoresScene(std::unique_ptr<SettingsScene> ptr);
+        ScoresScene(SettingsScene& scene);
         void processInput() override;
         std::unique_ptr<Scene> update(float delta) override;
         void draw() override;
