@@ -27,14 +27,4 @@ target_sources(ColorTiles PUBLIC
 target_include_directories(ColorTiles PUBLIC "src" "include")
 target_link_libraries(${PROJECT_NAME} raylib)
 
-#Removes console
-if (WIN32)
-    # /ENTRY:mainCRTStartup keeps the same "main" function instead of requiring "WinMain"
-    set(SUBSYSTEM_LINKER_OPTIONS /SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup)
-else()
-    set(SUBSYSTEM_LINKER_OPTIONS -mwindows)
-endif()
-
-target_link_options(ColorTiles PRIVATE ${SUBSYSTEM_LINKER_OPTIONS})
-
 set_property(TARGET ColorTiles PROPERTY CXX_STANDARD 20)

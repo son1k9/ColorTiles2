@@ -20,12 +20,23 @@ namespace Scenes {
 
     class MainMenuScene final : public Scene {
     private:
+        struct {
+            bool fieldSizeEdit = false;
+            bool colorsEdit = false;
+            bool roundTimeEdit = false;
+        } ui_{};
+
         SettingsScene& settingsScene_;
-        bool play_ = false;
-        bool scores_ = false; 
-        bool quit_ = false;
-        bool toggleSettings_ = false;
+
+        struct {
+            bool play = false;
+            bool scores = false;
+            bool quit = false;
+            bool toggleSettings = false;
+        } controls_{};
+
         bool settingsActive_ = false;
+
     public:
         MainMenuScene(SettingsScene& scene);
         void processInput() override;

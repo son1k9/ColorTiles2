@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <sstream>
 #include <string_view>
 #include <string>
@@ -27,8 +28,8 @@ namespace SettingsNM {
 
             const auto oldI = i;
             const auto index = str.find('\n', i);
-            i = index;
-            return str.substr(oldI + 1, index);
+            i = index + 1;
+            return str.substr(oldI, index - oldI);
             };
 
         auto trim = [](std::string& str, std::string_view t = " \t\n\r\f\v") {
@@ -71,11 +72,11 @@ namespace SettingsNM {
     }
 
     void setSettingsFromMap(std::map<std::string, std::string>& values) {
-        if (values.contains("skin")) {
+        namespace fs = std::filesystem;
+        if (values.contains("skin") && fs::exists("Skins/" + values["skin"])
+            && fs::is_directory("Skins/" + values["skin"])) {
             skin = std::make_unique<Skin>(values["skin"]);
-        }
-        else {
-            skin = std::make_unique<Skin>("Default");
+            settings.skinName = values["skin"];
         }
 
         if (values.contains("cursorSize")) {

@@ -8,7 +8,6 @@
 
 bool windowShouldClose = false;
 
-
 static bool processGlobalInput() {
     if (IsKeyPressed(KEY_F11)) {
         static int lastWidth{};
@@ -43,6 +42,7 @@ int main() {
     SetTargetFPS(2 * GetMonitorRefreshRate(GetCurrentMonitor()));
     SetExitKey(-1);
 
+    SettingsNM::setDefaultSettings();
     {
         std::ifstream settingsFile(settingsPath);
         if (settingsFile.is_open()) {
@@ -50,8 +50,6 @@ int main() {
             buff << settingsFile.rdbuf();
             auto settingsMap = SettingsNM::cfgToMap(buff.str());
             SettingsNM::setSettingsFromMap(settingsMap);
-        } else {
-            SettingsNM::setDefaultSettings();
         }
     }
 

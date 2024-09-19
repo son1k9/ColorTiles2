@@ -8,68 +8,27 @@
 namespace SettingsNM {
     constexpr int maxColors = 10;
 
-    class Skin {
-    private:
-        Sound hitSound_{};
-        Sound missSound_{};
+    struct Skin {
+        Sound hitSound{};
+        Sound missSound{};
 
-        Texture2D background_{};
-        Texture2D colorTiles_[maxColors]{};
-        Texture2D colorTilesRemoving_[maxColors]{};
+        Texture2D background{};
+        Texture2D colorTiles[maxColors]{};
+        Texture2D colorTilesRemoving[maxColors]{};
 
-        Texture2D emptyTiles_[2]{};
-        Texture2D trail_[2]{};
+        Texture2D emptyTiles[2]{};
+        Texture2D trail[2]{};
 
-        Texture2D cursor_;
+        Texture2D cursor;
 
-        void assertIndex(int i, int less) const {
-            assert(i > 0 && i < less);
-        }
-
-    public:
         const std::string name;
-
-        Skin(std::string_view name);
+        Skin(const std::string& name);
         Skin(const Skin& other) = delete;
         Skin(Skin&& other) = delete;
         Skin& operator=(const Skin& other) = delete;
         Skin& operator=(Skin&& other) = delete;
-
-        const Sound& hitSound() const {
-            return hitSound_;
-        }
-
-        const Sound& missSound() const {
-            return missSound_;
-        }
-
-        const Texture2D& background() const {
-            return background_;
-        }
-
-        const Texture2D& colorTile(int i) const {
-            assertIndex(i, maxColors);
-            return colorTiles_[i];
-        }
-
-        const Texture2D& colorTileRemoving(int i) const {
-            assertIndex(i, maxColors);
-            return colorTilesRemoving_[i];
-        }
-
-        const Texture2D& emptyTile(int i) const {
-            assertIndex(i, 2);
-            return emptyTiles_[i];
-        }
-
-        const Texture2D& trail(int i) const {
-            assertIndex(i, 2);
-            return trail_[i];
-        }
-
-        const Texture2D& cursor() const {
-            return cursor_;
-        }
+        ~Skin();
+        void load();
     };
 
     struct Settings {

@@ -3,9 +3,6 @@
 
 namespace GlobalInput {
     inline bool settings() {
-        if (IsKeyDown(KEY_RIGHT_CONTROL) && IsKeyPressed(KEY_O)
-            || IsKeyPressed(KEY_ESCAPE)) {
-            return true;
-        }
+        return IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_O);
     }
 }

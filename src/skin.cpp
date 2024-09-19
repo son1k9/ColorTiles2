@@ -6,9 +6,15 @@
 #include "raygui.h"
 #include "settings.h"
 
-SettingsNM::Skin::Skin(std::string_view name) : name{ name } {
+using namespace SettingsNM;
+
+Skin::Skin(const std::string& name) : name{ name } {
+    load();
+}
+
+void Skin::load() {
     namespace fs = std::filesystem;
-    const fs::path skin = std::format("Skins/{}", name);
+    const fs::path skin = "Skins/" + name;
     fs::current_path(skin);
 
     auto loadTexture = [](Texture2D& texture, const std::string& path) {
@@ -20,23 +26,23 @@ SettingsNM::Skin::Skin(std::string_view name) : name{ name } {
         }
         };
 
-    background_ = LoadTexture("BackgroundImage.png");
-    std::string tilePath;
-    for (int i = 0; i < 10; i++) {
-        tilePath = std::format("ColorTile{}.png", i);
-        loadTexture(colorTiles_[i], tilePath);
-    }
-     
-    for (int i = 0; i < 10; i++) {
-        tilePath = std::format("ColorTileRemoving{}.png", i);
-        loadTexture(colorTilesRemoving_[i], tilePath);
+    background = LoadTexture("BackgroundImage.png");
+    std::string path;
+    for (int i = 0; i < maxColors; i++) {
+        path = std::format("ColorTile{}.png", i);
+        loadTexture(colorTiles[i], path);
     }
 
-    loadTexture(emptyTiles_[0], "EmptyTile0.png");
-    loadTexture(emptyTiles_[1], "EmptyTile1.png");
-    loadTexture(trail_[0], "Trail0.png");
-    loadTexture(trail_[1], "Trail1.png");
-    loadTexture(cursor_, "cursor.png");
+    for (int i = 0; i < maxColors; i++) {
+        path = std::format("ColorTileRemoving{}.png", i);
+        loadTexture(colorTilesRemoving[i], path);
+    }
+
+    loadTexture(emptyTiles[0], "EmptyTile0.png");
+    loadTexture(emptyTiles[1], "EmptyTile1.png");
+    loadTexture(trail[0], "Trail0.png");
+    loadTexture(trail[1], "Trail1.png");
+    loadTexture(cursor, "cursor.png");
 
     auto loadSound = [](Sound& sound, const std::string& path) {
         sound = LoadSound(path.c_str());
@@ -52,20 +58,20 @@ SettingsNM::Skin::Skin(std::string_view name) : name{ name } {
     bool styleLoaded = false;
     for (const auto& dirEntry : fs::directory_iterator{ fs::current_path() }) {
         if (dirEntry.path().stem() == "hit") {
-            std::string stringPath = dirEntry.path().string();
-            loadSound(hitSound_, stringPath);
+            path = dirEntry.path().string();
+            loadSound(hitSound, path);
             hitLoaded = true;
         }
 
         if (dirEntry.path().stem() == "miss") {
-            std::string stringPath = dirEntry.path().string();
-            loadSound(missSound_, stringPath);
+            path = dirEntry.path().string();
+            loadSound(missSound, path);
             missLoaded = true;
         }
 
         if (dirEntry.path().extension() == ".rgs") {
-            std::string stringPath = dirEntry.path().string();
-            GuiLoadStyle(stringPath.c_str());
+            path = dirEntry.path().string();
+            GuiLoadStyle(path.c_str());
             styleLoaded = true;
         }
 
@@ -80,4 +86,21 @@ SettingsNM::Skin::Skin(std::string_view name) : name{ name } {
 
     fs::current_path("..\\..\\");
     std::cout << "Skin loaded succesfuly\n";
+}
+
+Skin::~Skin() {
+    UnloadSound(missSound);
+    UnloadSound(hitSound);
+    UnloadTexture(background);
+    for (int i = 0; i < 10; i++) {
+        UnloadTexture(colorTiles[i]);
+    }
+    for (int i = 0; i < 10; i++) {
+        UnloadTexture(colorTilesRemoving[i]);
+    }
+    UnloadTexture(emptyTiles[0]);
+    UnloadTexture(emptyTiles[1]);
+    UnloadTexture(trail[0]);
+    UnloadTexture(trail[1]);
+    UnloadTexture(cursor);
 }
