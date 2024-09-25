@@ -16,7 +16,7 @@ void MainMenuScene::processInput() {
 
     if (settingsActive_) {
         settingsScene_.processInput();
-        controls_.toggleSettings |= IsKeyDown(KEY_ESCAPE);
+        controls_.toggleSettings |= IsKeyPressed(KEY_ESCAPE);
         return;
     }
 

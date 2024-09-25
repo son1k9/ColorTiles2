@@ -1,3 +1,4 @@
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <fstream>
@@ -50,7 +51,13 @@ int main() {
             buff << settingsFile.rdbuf();
             auto settingsMap = SettingsNM::cfgToMap(buff.str());
             SettingsNM::setSettingsFromMap(settingsMap);
+            SettingsNM::setSkinFromSettings();
         }
+    }
+
+    if (!SettingsNM::skin.load() && !SettingsNM::setAndLoadDefaultSkin()) {
+        std::cout<<"Default skin does not exists";
+        return 1;
     }
 
     SettingsScene settingsScene;

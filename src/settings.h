@@ -21,14 +21,17 @@ namespace SettingsNM {
 
         Texture2D cursor;
 
-        const std::string name;
-        Skin(const std::string& name);
+        bool loaded = false;
+        std::string name;
+        Skin();
         Skin(const Skin& other) = delete;
         Skin(Skin&& other) = delete;
         Skin& operator=(const Skin& other) = delete;
         Skin& operator=(Skin&& other) = delete;
         ~Skin();
-        void load();
+        bool load();
+        void unload();
+        bool exists();
     };
 
     struct Settings {
@@ -39,9 +42,6 @@ namespace SettingsNM {
         bool useCustomCursor{};
         std::string skinName;
     };
-
-    extern std::unique_ptr<Skin> skin;
-    extern Settings settings;
 
     inline const Settings defaultSettings{
         .cursorSize = 1.0f,
@@ -69,6 +69,12 @@ namespace SettingsNM {
         .useCustomCursor = true,
         .skinName = "Default",
     };
+
+    extern Skin skin;
+    extern Settings settings;
+
+    void setSkinFromSettings();
+    bool setAndLoadDefaultSkin();
 
     std::map<std::string, std::string> cfgToMap(std::string_view cfg);
     std::string mapToCfg(std::map<std::string, std::string> m);

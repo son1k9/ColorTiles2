@@ -7,13 +7,24 @@
 #include "settings.h"
 
 using namespace SettingsNM;
+namespace fs = std::filesystem;
 
-Skin::Skin(const std::string& name) : name{ name } {
-    load();
+Skin::Skin() {
 }
 
-void Skin::load() {
-    namespace fs = std::filesystem;
+bool Skin::exists() {
+    return fs::exists("Skins/" + name) && fs::is_directory("Skins/" + name);
+}
+
+bool Skin::load() {
+    if (!exists()) {
+        return false;
+    }
+
+    if (loaded) {
+        unload();
+    }
+
     const fs::path skin = "Skins/" + name;
     fs::current_path(skin);
 
@@ -86,9 +97,16 @@ void Skin::load() {
 
     fs::current_path("..\\..\\");
     std::cout << "Skin loaded succesfuly\n";
+    loaded = true;
+    return true;
 }
 
+
 Skin::~Skin() {
+    unload();
+}
+
+void Skin::unload() {
     UnloadSound(missSound);
     UnloadSound(hitSound);
     UnloadTexture(background);
@@ -103,4 +121,5 @@ Skin::~Skin() {
     UnloadTexture(trail[0]);
     UnloadTexture(trail[1]);
     UnloadTexture(cursor);
+    loaded = false;
 }

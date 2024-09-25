@@ -8,8 +8,8 @@
 #include "settings.h"
 
 namespace SettingsNM {
-    std::unique_ptr<Skin> skin = nullptr;
     Settings settings;
+    Skin skin;
 
     void setDefaultSettings() {
         settings.cursorSize = defaultSettings.cursorSize;
@@ -17,7 +17,12 @@ namespace SettingsNM {
         settings.roundTime = defaultSettings.roundTime;
         settings.colors = defaultSettings.colors;
         settings.useCustomCursor = defaultSettings.useCustomCursor;
-        skin = std::make_unique<Skin>(defaultSettings.skinName);
+        skin.name = defaultSettings.skinName;
+    }
+
+    bool setAndLoadDefaultSkin() {
+        skin.name = defaultSettings.skinName;
+        return skin.load();
     }
 
     std::map<std::string, std::string> cfgToMap(std::string_view cfg) {
@@ -71,11 +76,13 @@ namespace SettingsNM {
         return result;
     }
 
+    void setSkinFromSettings() {
+        skin.name = settings.skinName;
+    }
+
     void setSettingsFromMap(std::map<std::string, std::string>& values) {
         namespace fs = std::filesystem;
-        if (values.contains("skin") && fs::exists("Skins/" + values["skin"])
-            && fs::is_directory("Skins/" + values["skin"])) {
-            skin = std::make_unique<Skin>(values["skin"]);
+        if (values.contains("skin")) {
             settings.skinName = values["skin"];
         }
 
@@ -115,7 +122,7 @@ namespace SettingsNM {
 
     std::map<std::string, std::string> settingsToMap() {
         std::map<std::string, std::string> result;
-        result["skin"] = skin->name;
+        result["skin"] = skin.name;
         result["cursorSize"] = std::to_string(settings.cursorSize);
         result["fieldSize"] = std::to_string(settings.fieldSize);
         result["roundTime"] = std::to_string(settings.roundTime);
