@@ -2,12 +2,12 @@
 
 using namespace Scenes;
 
-GameplayScene::GameplayScene(SettingsScene& scene) : settingsScene_(scene) {
-
-}
+GameplayScene::GameplayScene(SettingsSceneState& scene) : settings_(scene) {}
 
 void GameplayScene::processInput() {
-
+    if (!settings_.processInput()) {
+        return;
+    }
 }
 
 std::unique_ptr<Scene> GameplayScene::update(float delta) {
@@ -15,5 +15,5 @@ std::unique_ptr<Scene> GameplayScene::update(float delta) {
 }
 
 void GameplayScene::draw() {
-
+    ClearBackground(BLUE);
 }

@@ -23,6 +23,7 @@ target_sources(ColorTiles PUBLIC
     src/skin.cpp
     src/gameplay_scene.cpp
     src/raygui_impl.cpp
+    src/settings_scene_state.cpp
 )
 target_include_directories(ColorTiles PUBLIC "src" "include")
 target_link_libraries(${PROJECT_NAME} raylib)

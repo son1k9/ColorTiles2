@@ -9,28 +9,28 @@ using namespace Scenes;
 
 extern bool windowShouldClose;
 
-MainMenuScene::MainMenuScene(SettingsScene& scene) : settingsScene_(scene) {}
+MainMenuScene::MainMenuScene(SettingsScene& scene) : settings_(scene) {}
 
 void MainMenuScene::processInput() {
-    controls_.toggleSettings |= GlobalInput::settings();
-
-    if (settingsActive_) {
-        settingsScene_.processInput();
-        controls_.toggleSettings |= IsKeyPressed(KEY_ESCAPE);
+    if (!settings_.processInput()) {
         return;
     }
 
-    controls_.play |= IsKeyPressed(KEY_ENTER);
+    if (dialogActive_) {
+        controls_.toggleDialog |= IsKeyPressed(KEY_ESCAPE);
+        controls_.play |= IsKeyPressed(KEY_ENTER);
+        return;
+    }
+
+    controls_.toggleDialog |= IsKeyPressed(KEY_ENTER);
 }
 
 std::unique_ptr<Scene> MainMenuScene::update(float delta) {
-    if (settingsActive_) {
-        settingsScene_.update(delta);
-    }
+    settings_.update(delta);
 
-    if (controls_.toggleSettings) {
-        controls_.toggleSettings = false;
-        settingsActive_ = !settingsActive_;
+    if (controls_.toggleDialog) {
+        dialogActive_ = !dialogActive_;
+        controls_.toggleDialog = false;
     }
 
     if (controls_.quit) {
@@ -39,20 +39,18 @@ std::unique_ptr<Scene> MainMenuScene::update(float delta) {
     }
 
     if (controls_.play) {
-        return std::make_unique<GameplayScene>(settingsScene_);
+        return std::make_unique<GameplayScene>(settings_.scene);
     }
 
     if (controls_.scores) {
-        return std::make_unique<ScoresScene>(settingsScene_);
+        return std::make_unique<ScoresScene>(settings_.scene);
     }
 
     return nullptr;
 }
 
 void MainMenuScene::draw() {
-    if (settingsActive_) {
-        settingsScene_.draw();
-    }
+    settings_.draw();
 
     GuiSetStyle(DEFAULT, TEXT_SIZE, 40);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 2);
@@ -66,12 +64,16 @@ void MainMenuScene::draw() {
     int buttonHeight = 80;
     int gap = 25;
 
-    controls_.play = GuiButton({
+    if (settings_.settingsActive || dialogActive_) {
+        GuiLock();
+    }
+
+    controls_.toggleDialog |= static_cast<bool>(GuiButton({
         .x = (width - buttomWidth) / 2.f,
         .y = (height - buttonHeight) / 2.f,
         .width = static_cast<float>(buttomWidth),
         .height = static_cast<float>(buttonHeight) },
-        "Play");
+        "Play"));
 
     controls_.scores = GuiButton({
         .x = (width - buttomWidth) / 2.f,
@@ -80,12 +82,12 @@ void MainMenuScene::draw() {
         .height = static_cast<float>(buttonHeight) },
         "Scores");
 
-    controls_.toggleSettings |= GuiButton({
+    settings_.toggleSettings |= static_cast<bool>(GuiButton({
         .x = (width - buttomWidth) / 2.f,
         .y = (height - buttonHeight) / 2.f + 2 * (buttonHeight + gap),
         .width = static_cast<float>(buttomWidth),
         .height = static_cast<float>(buttonHeight) },
-        "Settings");
+        "Settings"));
 
     controls_.quit = GuiButton({
         .x = (width - buttomWidth) / 2.f,
@@ -93,4 +95,10 @@ void MainMenuScene::draw() {
         .width = static_cast<float>(buttomWidth),
         .height = static_cast<float>(buttonHeight) },
         "Quit");
+
+    GuiUnlock();
+
+    if (dialogActive_) {
+        DrawRectangle((width - 200) / 2, (height - 200) / 2, 200, 200, BLACK);
+    }
 }

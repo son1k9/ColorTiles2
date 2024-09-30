@@ -1,8 +1,9 @@
 #pragma once 
 #include <memory>
+#include <global_input.h>
 
 namespace Scenes {
-    //Just an interface
+    //Interface
     class Scene {
     public:
         virtual void processInput() = 0;
@@ -18,24 +19,38 @@ namespace Scenes {
         void draw() override;
     };
 
+    struct SettingsSceneState {
+        SettingsScene& scene;
+        bool toggleSettings = false;
+        bool settingsActive = false;
+
+        bool processInput();
+        void update(float delta);
+        void draw();
+        SettingsSceneState(SettingsScene& scene);
+    };
+
     class MainMenuScene final : public Scene {
     private:
         struct {
             bool fieldSizeEdit = false;
             bool colorsEdit = false;
             bool roundTimeEdit = false;
+
+
         } ui_{};
 
-        SettingsScene& settingsScene_;
+        bool dialogActive_ = false;
 
         struct {
-            bool play = false;
+            bool toggleDialog = false;
             bool scores = false;
             bool quit = false;
-            bool toggleSettings = false;
+
+            bool play = false;
         } controls_{};
 
-        bool settingsActive_ = false;
+        SettingsSceneState settings_;
 
     public:
         MainMenuScene(SettingsScene& scene);
@@ -46,9 +61,19 @@ namespace Scenes {
 
     class GameplayScene final : public Scene {
     private:
-        SettingsScene& settingsScene_;
+        struct {
+            int f = 0; 
+        } ui_;
+
+        struct {
+            bool toggleMenu = false;
+        } controls_;
+
+        bool menuActive_ = false;
+
+        SettingsSceneState settings_;
     public:
-        GameplayScene(SettingsScene& scene);
+        GameplayScene(SettingsSceneState& scene);
         void processInput() override;
         std::unique_ptr<Scene> update(float delta) override;
         void draw() override;
@@ -56,7 +81,11 @@ namespace Scenes {
 
     class ScoresScene final : public Scene {
     private:
-        SettingsScene& settingsScene_;
+        struct {
+            bool backToMenu = false;
+        } controls_;
+
+        SettingsSceneState settings_;
     public:
         ScoresScene(SettingsScene& scene);
         void processInput() override;

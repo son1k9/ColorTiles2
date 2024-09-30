@@ -63,7 +63,7 @@ int main() {
     SettingsScene settingsScene;
     std::unique_ptr<Scene> scene = std::make_unique<MainMenuScene>(settingsScene);
 
-    while (!windowShouldClose) {
+    while (!windowShouldClose && !WindowShouldClose()) {
         const auto delta = GetFrameTime();
         if (processGlobalInput()) {
             scene->processInput();
