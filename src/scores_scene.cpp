@@ -3,28 +3,28 @@
 
 using namespace Scenes;
 
-ScoresScene::ScoresScene(SettingsScene& scene) : settings_(scene) {}
+ScoresScene::ScoresScene(SettingsScene& scene) : settings(scene) {}
 
 void ScoresScene::processInput() {
-    if (!settings_.processInput()) {
+    if (!settings.processInput()) {
         return;
     }
 
-    controls_.backToMenu = IsKeyPressed(KEY_ESCAPE);
+    controls.backToMenu = IsKeyPressed(KEY_ESCAPE);
 }
 
 std::unique_ptr<Scene> ScoresScene::update(float delta) {
-    settings_.update(delta);
+    settings.update(delta);
 
-    if (controls_.backToMenu) {
-        return std::make_unique<MainMenuScene>(settings_.scene);
+    if (controls.backToMenu) {
+        return std::make_unique<MainMenuScene>(settings.scene);
     }
 
     return nullptr;
 }
 
 void ScoresScene::draw() {
-    settings_.draw();
+    settings.draw();
 
     ClearBackground(RED);
 }

@@ -1,6 +1,9 @@
 #pragma once 
+#include <vector>
+#include <string>
 #include <memory>
 #include <global_input.h>
+#include "utils.h"
 
 namespace Scenes {
     //Interface
@@ -36,9 +39,7 @@ namespace Scenes {
             bool fieldSizeEdit = false;
             bool colorsEdit = false;
             bool roundTimeEdit = false;
-
-
-        } ui_{};
+        } ui{};
 
         bool dialogActive_ = false;
 
@@ -46,11 +47,10 @@ namespace Scenes {
             bool toggleDialog = false;
             bool scores = false;
             bool quit = false;
-
             bool play = false;
-        } controls_{};
+        } controls{};
 
-        SettingsSceneState settings_;
+        SettingsSceneState settings;
 
     public:
         MainMenuScene(SettingsScene& scene);
@@ -62,18 +62,48 @@ namespace Scenes {
     class GameplayScene final : public Scene {
     private:
         struct {
-            int f = 0; 
-        } ui_;
+            int f = 0;
+        } ui;
 
         struct {
             bool toggleMenu = false;
-        } controls_;
+            bool quit = false;
+        } controls;
 
-        bool menuActive_ = false;
+		bool menuActive = false;
 
-        SettingsSceneState settings_;
+		struct Tile {
+			int color{};
+			bool isAlive{};
+
+			struct PositionData {
+				Vector2 pos{};
+				Vector2 vel{};
+			};
+		};
+
+        const int colors{};
+        const int fieldSize{};
+        std::vector<Tile> field;
+        std::vector<int> colorsVec;
+
+        std::string currentSeed;
+
+        SettingsSceneState settings;
+
+        int index2DTo1D(int x, int y) const {
+            return y * fieldSize + x;
+        }
+
+        Utils::Vector2i index1DTo2D(int i) const {
+            return { i % fieldSize, i / fieldSize };
+        }
+
+        void generateField(size_t seed);
+        void reset();
+
     public:
-        GameplayScene(SettingsSceneState& scene);
+        GameplayScene(SettingsScene& scene, int fieldSize, int colors);
         void processInput() override;
         std::unique_ptr<Scene> update(float delta) override;
         void draw() override;
@@ -83,9 +113,9 @@ namespace Scenes {
     private:
         struct {
             bool backToMenu = false;
-        } controls_;
+        } controls;
 
-        SettingsSceneState settings_;
+        SettingsSceneState settings;
     public:
         ScoresScene(SettingsScene& scene);
         void processInput() override;

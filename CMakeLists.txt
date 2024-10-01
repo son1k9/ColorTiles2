@@ -13,6 +13,7 @@ FetchContent_Declare(
 set(BUILD_EXAMPLES OFF CACHE INTERNAL "")
 FetchContent_MakeAvailable(raylib)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/ColorTiles) 
 add_executable (ColorTiles  "src/main.cpp")
 target_sources(ColorTiles PUBLIC 
     src/main.cpp
@@ -24,7 +25,7 @@ target_sources(ColorTiles PUBLIC
     src/gameplay_scene.cpp
     src/raygui_impl.cpp
     src/settings_scene_state.cpp
-)
+    src/seed_generator.h)
 target_include_directories(ColorTiles PUBLIC "src" "include")
 target_link_libraries(${PROJECT_NAME} raylib)
 

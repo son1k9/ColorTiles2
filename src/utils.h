@@ -1,7 +1,7 @@
 #pragma once
 #include "raylib.h"
 
-namespace Rayutils {
+namespace Utils {
 	inline int GetDisplayWidth() {
 		if (IsWindowFullscreen()) {
 			return GetMonitorWidth(GetCurrentMonitor());
@@ -31,6 +31,8 @@ namespace Rayutils {
 			position, origin, rotation, color
 		);
 	}
+
+
 
 	struct Vector2i {
 		int x{};
