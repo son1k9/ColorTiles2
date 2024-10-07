@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <global_input.h>
+#include "settings.h"
 #include "utils.h"
 
 namespace Scenes {
@@ -16,10 +17,25 @@ namespace Scenes {
     };
 
     class SettingsScene final : public Scene {
+    private:
+        struct {
+            bool skinEdit = false;
+        } ui;
+
+        struct {
+            bool changeSkin = false;
+        } controls;
+
+        int previousSkinIndex = 0;
+        int currentSkinIndex = 0;
+        std::vector<std::string> skinNames;
+        std::string currentSkinName;
+
     public:
         void processInput() override;
         std::unique_ptr<Scene> update(float delta) override;
         void draw() override;
+        SettingsScene();
     };
 
     struct SettingsSceneState {
@@ -70,22 +86,20 @@ namespace Scenes {
             bool quit = false;
         } controls;
 
-		bool menuActive = false;
+        bool menuActive = false;
 
-		struct Tile {
-			int color{};
-			bool isAlive{};
+        struct Tile {
+            int color{};
 
-			struct PositionData {
-				Vector2 pos{};
-				Vector2 vel{};
-			};
-		};
+            struct PositionData {
+                Vector2 pos{};
+                Vector2 vel{};
+            };
+        };
 
         const int colors{};
         const int fieldSize{};
         std::vector<Tile> field;
-        std::vector<int> colorsVec;
 
         std::string currentSeed;
 
@@ -103,7 +117,7 @@ namespace Scenes {
         void reset();
 
     public:
-        GameplayScene(SettingsScene& scene, int fieldSize, int colors);
+        GameplayScene(SettingsScene& scene, const SettingsNM::Settings& settings);
         void processInput() override;
         std::unique_ptr<Scene> update(float delta) override;
         void draw() override;

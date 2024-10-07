@@ -3,6 +3,7 @@
 #include "random.h"
 #include "scene.h"
 #include "seed_generator.h"
+#include "settings.h"
 
 using namespace Scenes;
 
@@ -10,14 +11,14 @@ static bool isEven(int x) {
     return (x & 1) == 0;
 }
 
-GameplayScene::GameplayScene(SettingsScene& scene, int fieldSize, int colors)
-	: settings(scene), colors{ colors }, fieldSize{ fieldSize }, field(fieldSize), colorsVec(fieldSize) {
-	reset();
+GameplayScene::GameplayScene(SettingsScene& scene, const SettingsNM::Settings& settings)
+    : settings(scene), colors{ settings.colors }, fieldSize{ settings.fieldSize }, field(settings.fieldSize) {
+    reset();
 }
 
 void GameplayScene::reset() {
-	currentSeed = SeedGenerator::getSeedString();
-	generateField(SeedGenerator::strToSeed(currentSeed));
+    currentSeed = SeedGenerator::getSeedString();
+    generateField(SeedGenerator::strToSeed(currentSeed));
 }
 
 void GameplayScene::processInput() {
@@ -25,97 +26,95 @@ void GameplayScene::processInput() {
         return;
     }
 
-	controls.toggleMenu |= IsKeyPressed(KEY_ESCAPE);
+    controls.toggleMenu |= IsKeyPressed(KEY_ESCAPE);
 }
 
 std::unique_ptr<Scene> GameplayScene::update(float delta) {
-	settings.update(delta);
+    settings.update(delta);
 
-	if (controls.quit) {
-		return std::make_unique<MainMenuScene>(settings.scene);
-	}
+    if (controls.quit) {
+        return std::make_unique<MainMenuScene>(settings.scene);
+    }
 
-	if (controls.toggleMenu) {
-		menuActive = !menuActive;
-		controls.toggleMenu = false;
-	}
+    if (controls.toggleMenu) {
+        menuActive = !menuActive;
+        controls.toggleMenu = false;
+    }
 
     return nullptr;
 }
 
 void GameplayScene::draw() {
-	settings.draw();
-
-	const int width = Utils::GetDisplayWidth();
-	const int height = Utils::GetDisplayHeight();
+    const int width = Utils::GetDisplayWidth();
+    const int height = Utils::GetDisplayHeight();
 
     ClearBackground(BLUE);
 
-	//Draw game field
+    //Draw game field
 
-	if (!menuActive) {
-		return;
-	}
+    settings.draw();
 
-	//Draw menu
-	if (settings.settingsActive) {
-		GuiLock();
-	}
+    if (!menuActive) {
+        return;
+    }
 
-	int buttonWidth = 300;
-	int buttonHeight = 80;
-	int gap = 25;
+    if (settings.settingsActive) {
+        GuiLock();
+    }
 
-	controls.toggleMenu |= static_cast<bool>(GuiButton({
-		.x = (width - buttonWidth) / 2.f,
-		.y = (height - buttonHeight) / 2.f,
-		.width = static_cast<float>(buttonWidth),
-		.height = static_cast<float>(buttonHeight) },
-		"Continue"));
+    constexpr int buttonWidth = 300;
+    constexpr int buttonHeight = 80;
+    constexpr int gap = 25;
+    constexpr int totalHeight = 80 * 3 + 25 * 2;
 
-	settings.toggleSettings |= static_cast<bool>(GuiButton({
-		.x = (width - buttonWidth) / 2.f,
-		.y = (height - buttonHeight) / 2.f + (buttonHeight + gap),
-		.width = static_cast<float>(buttonWidth),
-		.height = static_cast<float>(buttonHeight) },
-		"Settings"));
+    const float x = (width - buttonWidth) / 2.f;
+    const float y = (height - totalHeight) / 2.f;
 
-	controls.quit = GuiButton({
-		.x = (width - buttonWidth) / 2.f,
-		.y = (height - buttonHeight) / 2.f + 2 * (buttonHeight + gap),
-		.width = static_cast<float>(buttonWidth),
-		.height = static_cast<float>(buttonHeight) },
-		"Quit");
+    controls.toggleMenu |= static_cast<bool>(GuiButton({
+        .x = x,
+        .y = y,
+        .width = static_cast<float>(buttonWidth),
+        .height = static_cast<float>(buttonHeight) },
+        "Continue"));
 
-	GuiUnlock();
+    settings.toggleSettings |= static_cast<bool>(GuiButton({
+        .x = x,
+        .y = y + buttonHeight + gap,
+        .width = static_cast<float>(buttonWidth),
+        .height = static_cast<float>(buttonHeight) },
+        "Settings"));
+
+    controls.quit = GuiButton({
+        .x = x,
+        .y = y + 2 * (buttonHeight + gap),
+        .width = static_cast<float>(buttonWidth),
+        .height = static_cast<float>(buttonHeight) },
+        "Quit");
+
+    GuiUnlock();
 }
 
 void GameplayScene::generateField(size_t seed) {
-	constexpr float colorProbality = 0.8f;
-	const int tilesForColor = [this]() -> int {
-		int tForColor = static_cast<int>(field.size() * colorProbality) / colors;
-		if (!isEven(tForColor)) {
-			tForColor -= 1;
-		}
-		return tForColor;
-		}();
+    constexpr float colorProbality = 0.8f;
+    const int tilesForColor = [this]() -> int {
+        int tForColor = static_cast<int>(field.size() * colorProbality) / colors;
+        if (!isEven(tForColor)) {
+            tForColor -= 1;
+        }
+        return tForColor;
+        }();
 
-	int k = 0;
-	for (int i = 1; i <= colors; i++) {
-		for (int j = 0; j < tilesForColor; j++) {
-			colorsVec[k++] = i;
-		}
-	}
+    int k = 0;
+    for (int i = 1; i <= colors; i++) {
+        for (int j = 0; j < tilesForColor; j++) {
+            field[k++] = Tile{ i };
+        }
+    }
 
-	while (k < colorsVec.size()) {
-		colorsVec[k++] = 0;
-	}
+    while (k < field.size()) {
+        field[k++] = Tile{ 0 };
+    }
 
-	Random::seed(seed);
-	std::shuffle(colorsVec.begin(), colorsVec.end(), Random::mt);
-
-	for (int i = 0; i < field.size(); i++) {
-		field[i].color = colorsVec[i];
-		field[i].isAlive = static_cast<bool>(colorsVec[i]);
-	}
+    Random::seed(seed);
+    std::shuffle(field.begin(), field.end(), Random::mt);
 }

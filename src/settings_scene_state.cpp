@@ -1,4 +1,5 @@
 #include <scene.h>
+#include "utils.h"
 
 using namespace Scenes;
 
@@ -29,6 +30,9 @@ void SettingsSceneState::update(float delta) {
 
 void SettingsSceneState::draw() {
     if (settingsActive) {
+        const int width = Utils::GetDisplayWidth();
+        const int height = Utils::GetDisplayHeight();
+        DrawRectangle(0, 0, width, height, ColorAlpha(BLACK, 0.2f));
         scene.draw();
     }
 }

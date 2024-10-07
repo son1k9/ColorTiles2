@@ -39,9 +39,8 @@ std::unique_ptr<Scene> MainMenuScene::update(float delta) {
         return nullptr;
     }
 
-	if (controls.play) {
-		return std::make_unique<GameplayScene>(settings.scene,
-			SettingsNM::settings.fieldSize, SettingsNM::settings.colors);
+    if (controls.play) {
+        return std::make_unique<GameplayScene>(settings.scene, SettingsNM::settings);
     }
 
     if (controls.scores) {
@@ -52,8 +51,6 @@ std::unique_ptr<Scene> MainMenuScene::update(float delta) {
 }
 
 void MainMenuScene::draw() {
-    settings.draw();
-
     GuiSetStyle(DEFAULT, TEXT_SIZE, 40);
     GuiSetStyle(DEFAULT, BORDER_WIDTH, 2);
 
@@ -103,4 +100,6 @@ void MainMenuScene::draw() {
     if (dialogActive_) {
         DrawRectangle((width - 200) / 2, (height - 200) / 2, 200, 200, BLACK);
     }
+
+    settings.draw();
 }
