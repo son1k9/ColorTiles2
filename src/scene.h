@@ -26,10 +26,11 @@ namespace Scenes {
             bool changeSkin = false;
         } controls;
 
-        int previousSkinIndex = 0;
         int currentSkinIndex = 0;
+        int defaultSkinIndex = 0;
         std::vector<std::string> skinNames;
         std::string currentSkinName;
+        
 
     public:
         void processInput() override;
@@ -77,29 +78,29 @@ namespace Scenes {
 
     class GameplayScene final : public Scene {
     private:
+        using Tile = int;
+        using PlayField = std::vector<Tile>;
+        using ColorToTilesMap = std::map<int, std::vector<int>>;
+
         struct {
-            int f = 0;
+             int f = 0;
         } ui;
 
         struct {
             bool toggleMenu = false;
             bool quit = false;
+            bool removeTiles = false;
         } controls;
 
         bool menuActive = false;
 
-        struct Tile {
-            int color{};
+        Vector2 mousePosition;
 
-            struct PositionData {
-                Vector2 pos{};
-                Vector2 vel{};
-            };
-        };
+        bool newFieldOnReset = true;
 
         const int colors{};
         const int fieldSize{};
-        std::vector<Tile> field;
+        PlayField field;
 
         std::string currentSeed;
 
@@ -113,8 +114,19 @@ namespace Scenes {
             return { i % fieldSize, i / fieldSize };
         }
 
+        Tile getTileByPos(Utils::Vector2i position) {
+            int index = index2DTo1D(position.x, position.y);
+            // TODO: Assert index
+            return field[index];
+        }
+
         void generateField(size_t seed);
         void reset();
+        Utils::Vector2i worldToFieldPosition(Vector2 position) const;
+        void fieldRelease(Utils::Vector2i position);
+        int removeTiles(Utils::Vector2i position);
+        ColorToTilesMap findTilesForPos(Utils::Vector2i position) const;
+        void miss(Utils::Vector2i position);
 
     public:
         GameplayScene(SettingsScene& scene, const SettingsNM::Settings& settings);

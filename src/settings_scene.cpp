@@ -16,10 +16,15 @@ SettingsScene::SettingsScene() {
         }
     }
 
+    std::sort(skinNames.begin(), skinNames.end());
+
     for (int i = 0; i < skins.size(); i++) {
-        if (Settings::skin->name == skins[i]) {
+        if (SettingsNM::skin.name == skins[i]) {
             skinActive = i;
             previousSkin = i;
+        }
+        if (SettingsNM::skin.name == SettingsNM::defautSettings.skinName) {
+            defaultSkinIndex = i;
         }
         skinsStr += skins[i];
         if ((i + 1) < skins.size()) {
@@ -33,6 +38,14 @@ void SettingsScene::processInput() {
 }
 
 std::unique_ptr<Scene> SettingsScene::update(float delta) {
+    if (changeSkin) {
+        changeSkin = false;
+        if (!setAndLoadSkin(skinNames[currentSkinIndex])){
+            setAndLoadDefaultSkin();
+            currentSkinIndex = defaultSkinIndex;
+        }
+    }
+
     return nullptr;
 }
 
@@ -90,6 +103,9 @@ void SettingsScene::draw() {
         "Skin");
     if (GuiDropdownBox({ .x = groupBox.x + 184, .y = groupBox.y + 24, .width = 120, .height = 24 },
         currentSkinName.c_str(), &currentSkinIndex, ui.skinEdit)) {
+        if (ui.skinEdit){
+            changeSkin = true;
+        }
         ui.skinEdit = !ui.skinEdit;
     }
     GuiCheckBox({ .x = groupBox.x + 24, .y = groupBox.y + 104, .width = 24, .height = 24 },

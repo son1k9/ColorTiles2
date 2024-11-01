@@ -25,6 +25,12 @@ namespace SettingsNM {
         return skin.load();
     }
 
+    bool setAndLoadSkin(const std::string& name) {
+        settings.skinName;
+        skin.name = name;
+        return skin.load();
+    }
+
     std::map<std::string, std::string> cfgToMap(std::string_view cfg) {
         auto nextLine = [](std::string_view str, int& i) -> std::string_view {
             if (i >= str.length() - 1) {
