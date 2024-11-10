@@ -77,10 +77,19 @@ namespace Scenes {
     };
 
     class GameplayScene final : public Scene {
-    private:
+    public:
         using Tile = int;
-        using PlayField = std::vector<Tile>;
-        using ColorToTilesMap = std::map<int, std::vector<int>>;
+        using ColorToTileIndexMap = std::map<int, std::vector<int>>;
+
+        struct PlayField {
+            std::vector<Tile> field;
+            const int size;
+            const int colors;
+
+            PlayField(int size, int colors) : field(size), size{ size }, colors{ colors } {}
+        }
+
+    private:
 
         struct {
              int f = 0;
@@ -98,9 +107,7 @@ namespace Scenes {
 
         bool newFieldOnReset = true;
 
-        const int colors{};
-        const int fieldSize{};
-        PlayField field;
+        PlayField playField;
 
         std::string currentSeed;
 
@@ -120,12 +127,9 @@ namespace Scenes {
             return field[index];
         }
 
-        void generateField(size_t seed);
         void reset();
         Utils::Vector2i worldToFieldPosition(Vector2 position) const;
         void fieldRelease(Utils::Vector2i position);
-        int removeTiles(Utils::Vector2i position);
-        ColorToTilesMap findTilesForPos(Utils::Vector2i position) const;
         void miss(Utils::Vector2i position);
 
     public:

@@ -12,7 +12,7 @@ static bool isEven(int x) {
 }
 
 GameplayScene::GameplayScene(SettingsScene& scene, const SettingsNM::Settings& settings)
-    : settings(scene), colors{ settings.colors }, fieldSize{ settings.fieldSize }, field(settings.fieldSize) {
+    : settings(scene), playField { settings.fieldSize, settings.colors } {
     reset();
 }
 
@@ -30,7 +30,7 @@ void GameplayScene::processInput() {
         return;
     }
 
-    // TODO: Check if mouse is on filed first
+    // TODO: Check if mouse is on field first
     if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
         controls.removeTiels = true;
     }
@@ -110,40 +110,30 @@ void GameplayScene::draw() {
     GuiUnlock();
 }
 
-void GameplayScene::generateField(size_t seed) {
-    constexpr float colorProbality = 0.8f;
-    const int tilesForColor = [this]() -> int {
-        int tForColor = static_cast<int>(field.size() * colorProbality) / colors;
-        if (!isEven(tForColor)) {
-            tForColor -= 1;
-        }
-        return tForColor;
-        }();
+static void generateField(PlayField& playField, PlayField& playField, float color = 0.8f) {
+    int tilesForColor = static_cast<int>(playField.size * colorProbality) / playField.colors;
+    if (!isEven(tilesForColor)) {
+        tilesForColor = 1;
+    }
 
     int k = 0;
-    for (int i = 1; i <= colors; i++) {
+    for (int i = 1; i <= playField.colors; i++) {
         for (int j = 0; j < tilesForColor; j++) {
-            field[k++] = Tile{ i };
+            playField.field[k++] = i;
         }
     }
 
-    while (k < field.size()) {
-        field[k++] = Tile{ 0 };
+    while (k < field.size) {
+        playField.field[k++] = Tile{ 0 };
     }
 
     Random::seed(seed);
-    std::shuffle(field.begin(), field.end(), Random::mt);
+    std::shuffle(playField.field.begin(), playField.field.end(), Random::mt);
 }
 
+// NOTE: Maybe this should not be a method
 Utils::Vector2i GameplayScene::worldToFieldPosition(Vector2 position) {
     // TODO: Do assert instead
-    if (position.x < fieldTopLeft.x || position.x > fieldBottomRight.x || position.y < fieldTopLeft.y || position.y > fieldBottomRight.y) {
-        return { -1, -1 };
-    }
-
-    const int x = (int)(position.x - fieldTopLeft.x) / tileSize;
-    const int y = (int)(position.y - fieldTopLeft.y) / tileSize;
-    return { x, y };
 }
 
 void GameplayScene::fieldRelease(Utils::Vector2i position) {
@@ -163,16 +153,15 @@ void GameplayScene::fieldRelease(Utils::Vector2i position) {
     // TODO: Add and play hitsound score here
 }
 
-int GameplayScene::removeTiles(Utils::Vector2i position) {
-    auto tiles = findTilesForPos(position);
+static int removeTiles(PlayField& playField, Utils::Vector2i position) {
+    auto tiles = findTilesForPos(PlayField& playField, position);
     int score = 0;
 
     for (const auto& [color, tilesIndex] : tiles) {
         if (tiles.size() >= 2) {
             int count = 0;
             for (const auto& tileIndex : tilesIndex) {
-                auto tile = field[tileIndex];
-                tile = 0;
+                playField.field[tileIndex] = 0;
                 count++;
             }
             score += (int)pow(2, count - 1);
